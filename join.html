@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Join — NeuroQSP Working Group</title>
+  <meta name="description" content="Join the NeuroQSP Working Group. Membership is free and open — receive seminar invitations and connect with the community.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <div class="container nav">
+      <a href="index.html" class="brand" aria-label="NeuroQSP home">
+        <svg class="mark" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M8 26c6-2 8-10 12-10s6 8 12 6" stroke="#2b6cb0" stroke-width="2" stroke-linecap="round"/>
+          <path d="M6 14c7 3 10-6 16-4s6 12 12 10" stroke="#14b8a6" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="8" cy="26" r="3.4" fill="#15366b"/><circle cx="20" cy="16" r="3.4" fill="#2b6cb0"/>
+          <circle cx="32" cy="22" r="3.4" fill="#14b8a6"/><circle cx="6" cy="14" r="2.6" fill="#14b8a6"/>
+          <circle cx="34" cy="24" r="2.6" fill="#15366b"/>
+        </svg>
+        <span><span class="neuro">Neuro</span><span class="qsp">QSP</span></span>
+      </a>
+      <button class="nav-toggle" aria-label="Toggle menu" onclick="document.getElementById('navlinks').classList.toggle('open')">
+        <span></span><span></span><span></span>
+      </button>
+      <nav class="nav-links" id="navlinks">
+        <a href="index.html">Home</a>
+        <a href="about.html">About</a>
+        <a href="videos.html">Videos</a>
+        <a href="resources.html">Resources</a>
+        <a href="join.html" class="btn btn--primary active">Join the group</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Page hero -->
+  <section class="hero">
+    <div class="container" style="padding-top:64px; padding-bottom:64px;">
+      <p class="eyebrow">Get involved</p>
+      <h1>Join the NeuroQSP Working Group.</h1>
+      <p class="lead">Membership is free and open to anyone working at the intersection of pharmacology, modeling, and neuroscience. Sign up to receive seminar invitations, join discussions, and help shape shared workflows.</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="split">
+        <!-- Benefits -->
+        <div>
+          <p class="eyebrow">What membership gives you</p>
+          <h2>Be part of the conversation.</h2>
+          <ul class="checklist">
+            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg><span><strong>Seminar invitations</strong> — monthly talks from leaders across QSP and neuroscience.</span></li>
+            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg><span><strong>Community access</strong> — connect with peers across academia, industry, and regulators.</span></li>
+            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg><span><strong>Shared resources</strong> — workflows, reading, models, and tools as they grow.</span></li>
+            <li><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 13l4 4L19 7"/></svg><span><strong>A chance to contribute</strong> — present your work or help lead an initiative.</span></li>
+          </ul>
+          <div class="card mt-3" style="background:var(--bg-soft);">
+            <h3>Prefer email?</h3>
+            <p>Write to us directly at <a href="mailto:neuroqsp@gmail.com?subject=Joining%20the%20NeuroQSP%20Working%20Group">neuroqsp@gmail.com</a> and we'll add you to the list.</p>
+          </div>
+        </div>
+
+        <!-- Form -->
+        <div>
+          <form id="join-form" class="form-card" action="" method="POST">
+            <h3 class="mt-0">Sign up</h3>
+            <p class="text-muted" style="margin-top:4px;">Free · takes under a minute.</p>
+
+            <div class="field">
+              <label for="name">Full name</label>
+              <input id="name" name="name" type="text" required autocomplete="name">
+            </div>
+            <div class="field">
+              <label for="email">Email</label>
+              <input id="email" name="email" type="email" required autocomplete="email">
+            </div>
+            <div class="field">
+              <label for="org">Organization</label>
+              <input id="org" name="organization" type="text" autocomplete="organization">
+            </div>
+            <div class="field">
+              <label for="role">Primary area</label>
+              <select id="role" name="role">
+                <option value="">Select one…</option>
+                <option>Pharmacometrics / PKPD</option>
+                <option>QSP / systems biology</option>
+                <option>Computational neuroscience</option>
+                <option>Translational / clinical pharmacology</option>
+                <option>Neuroimaging / electrophysiology</option>
+                <option>CNS drug discovery</option>
+                <option>Regulatory science</option>
+                <option>Student / trainee</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="interest">What are you hoping to get out of the group? <span class="text-muted">(optional)</span></label>
+              <textarea id="interest" name="interest" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn--primary" style="width:100%; justify-content:center;">Join the working group →</button>
+            <p id="form-msg" class="hint" style="margin-top:12px;"></p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <a href="index.html" class="brand" style="margin-bottom:14px;">
+            <span><span style="color:#fff;">Neuro</span><span style="color:#14b8a6;">QSP</span></span>
+          </a>
+          <p style="max-width:34ch;">Uniting quantitative systems pharmacology and computational neuroscience to de-risk CNS drug discovery. An ISoP Special Interest Group.</p>
+        </div>
+        <div>
+          <h4>Explore</h4>
+          <ul>
+            <li><a href="about.html">About</a></li>
+            <li><a href="videos.html">Videos</a></li>
+            <li><a href="resources.html">Resources</a></li>
+            <li><a href="join.html">Join</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Connect</h4>
+          <ul>
+            <li><a href="mailto:neuroqsp@gmail.com">neuroqsp@gmail.com</a></li>
+            <li><a href="https://www.youtube.com/@NeuroQSP" target="_blank" rel="noopener">YouTube channel</a></li>
+            <li><a href="https://www.go-isop.org" target="_blank" rel="noopener">ISoP</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© <span id="year"></span> NeuroQSP Working Group</span>
+        <span>Built for the neuropharmacology community.</span>
+      </div>
+    </div>
+  </footer>
+
+  <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+  <script>
+    /* ------------------------------------------------------------
+       Sign-up handling.
+       Set FORM_ENDPOINT to a Formspree/Getform/Google-Apps-Script URL
+       to collect submissions in your inbox/spreadsheet. If it's left
+       blank, the form gracefully falls back to opening the visitor's
+       email client addressed to neuroqsp@gmail.com — so signup works
+       even before a backend is wired up.
+       ------------------------------------------------------------ */
+    const FORM_ENDPOINT = ""; // e.g. "https://formspree.io/f/xxxxxxx"
+    const form = document.getElementById('join-form');
+    const msg = document.getElementById('form-msg');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const data = Object.fromEntries(new FormData(form).entries());
+
+      if (FORM_ENDPOINT) {
+        msg.textContent = "Submitting…";
+        try {
+          const res = await fetch(FORM_ENDPOINT, {
+            method: "POST",
+            headers: { "Accept": "application/json" },
+            body: new FormData(form),
+          });
+          if (!res.ok) throw new Error();
+          form.reset();
+          msg.style.color = "var(--accent)";
+          msg.textContent = "Thanks for joining — we'll be in touch with your first invitation.";
+        } catch {
+          msg.style.color = "#c0392b";
+          msg.textContent = "Something went wrong. Please email neuroqsp@gmail.com and we'll add you.";
+        }
+      } else {
+        // mailto fallback
+        const subject = encodeURIComponent("NeuroQSP Working Group — sign up");
+        const body = encodeURIComponent(
+          `Name: ${data.name || ""}\nEmail: ${data.email || ""}\nOrganization: ${data.organization || ""}\n` +
+          `Primary area: ${data.role || ""}\n\nInterest: ${data.interest || ""}`
+        );
+        window.location.href = `mailto:neuroqsp@gmail.com?subject=${subject}&body=${body}`;
+        msg.style.color = "var(--muted)";
+        msg.textContent = "Opening your email app to finish — just hit send.";
+      }
+    });
+  </script>
+</body>
+</html>

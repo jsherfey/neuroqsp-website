@@ -1,0 +1,10 @@
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# Node (only used by scripts/update-videos.mjs; no deps required)
+node_modules/
+npm-debug.log*
