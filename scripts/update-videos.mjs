@@ -10,7 +10,7 @@
     server-side, where there is no CORS restriction.)
    ============================================================ */
 
-import { writeFile } from "node:fs/promises";
+import { writeFile, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
@@ -40,6 +40,16 @@ async function main() {
   if (!res.ok) throw new Error(`Feed fetch failed: HTTP ${res.status}`);
   const videos = parse(await res.text());
   if (!videos.length) throw new Error("No videos parsed from feed");
+
+  // Only rewrite the file when the actual video list changed, so scheduled
+  // runs don't churn out a commit on every run just because of a timestamp.
+  const signature = (list) => JSON.stringify(list.map((v) => [v.id, v.title, v.published]));
+  let existing = null;
+  try { existing = JSON.parse(await readFile(OUT, "utf8")); } catch { /* no file yet */ }
+  if (existing && signature(existing.videos || []) === signature(videos)) {
+    console.log(`No change — videos.json already lists ${videos.length} videos.`);
+    return;
+  }
 
   const payload = { updated: new Date().toISOString(), channelId: CHANNEL_ID, videos };
   await writeFile(OUT, JSON.stringify(payload, null, 2) + "\n");
