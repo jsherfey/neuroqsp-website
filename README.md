@@ -103,3 +103,70 @@ Submissions will then arrive in your inbox / dashboard. If you'd rather embed a
   `scripts/update-videos.mjs` if the channel ever changes.
 - **Contact email / links:** search for `neuroqsp@gmail.com` and the ISoP /
   YouTube URLs in the footers.
+
+---
+
+## Job board
+
+`jobs.html` lists open positions; `post-a-job.html` explains how to submit one.
+Employers submit through a **GitHub Issue Form**
+(`.github/ISSUE_TEMPLATE/job-post.yml`), and a GitHub Action
+(`.github/workflows/publish-jobs.yml`) compiles **approved** submissions into
+`jobs.json`, which the page renders. Nothing is ever published without a
+moderator's approval.
+
+### Moderating (what the chair does)
+
+1. A new submission arrives as an issue titled `[Job] …` with the
+   `job-submission` label. You get a GitHub notification.
+2. Open it, sanity-check it (real role? relevant? does the apply link work?).
+   The **Contact email** field is for you only — it is never published.
+3. Add the **`approved`** label. The Action runs immediately and the listing
+   is live on the site about a minute later.
+   - Not relevant / spam → add the **`spam`** or **`rejected`** label and close it.
+     Repeat offenders can be blocked from the repo.
+4. That's it. Edits by the poster are re-reviewed automatically (the Action
+   re-runs on edit; the `approved` label stays unless you remove it).
+
+To force a rebuild at any time: **Actions → "Publish job board" → Run workflow.**
+
+### Anti-spam design
+
+| Control | How |
+|---|---|
+| **Default-deny moderation** | Only issues with the `approved` label are compiled. Unlabeled, `spam`, and `rejected` issues never reach `jobs.json`. |
+| **Accountability** | Submitting requires a GitHub account; GitHub's own abuse controls apply, and you can block accounts. |
+| **Verification channel** | A required, unpublished contact email lets you confirm the poster. |
+| **Structured, validated fields** | Title, organization, location, type, arrangement, description, and apply info are all required; the build script skips anything incomplete and prints a warning. |
+| **Link safety** | Apply links must be `https://` (or an email). `javascript:`, `data:`, and other schemes are rejected. All output is HTML-escaped; external links use `rel="noopener nofollow"`. |
+| **Relevance policy** | Stated on `post-a-job.html#guidelines` so you can point to it when rejecting. |
+
+### Anti-stale design
+
+| Control | How |
+|---|---|
+| **Every listing expires** | Deadline if given, otherwise 60 days after posting; never more than 90 days. |
+| **Automatic retirement** | The Action runs daily, drops expired posts from `jobs.json`, and closes their issues with a friendly comment explaining how to relist. |
+| **Client-side guard** | `js/jobs.js` also hides anything past its expiry, so the page is correct even before the daily run. |
+| **Filled roles vanish fast** | Posters close their own issue when hired; the Action triggers on close and removes the listing. |
+| **Visible dates** | Each card shows "Posted" and "Closes" dates plus "New" / "Closing soon" badges. |
+
+### Important: repo visibility
+
+Issue Forms only accept submissions from people who can see the repository.
+**If this repo is private, outsiders cannot post.** Either make the repo
+public (the site is public anyway and contains no secrets), or keep it
+private and create a small *public* companion repo (e.g. `neuroqsp-jobs`)
+that holds only the issue template — then point `SUBMIT_URL` in
+`post-a-job.html` at it and set `--repo` in the workflow's `gh issue list`
+step accordingly (closing expired issues cross-repo then needs a
+fine-grained PAT with Issues: write stored as a repo secret).
+
+### Testing the build locally
+
+```bash
+gh issue list --label job-submission --label approved --state open \
+  --json number,title,body,createdAt,url,labels > /tmp/issues.json
+node scripts/build-jobs.mjs /tmp/issues.json            # writes jobs.json + expired.json
+node scripts/build-jobs.mjs /tmp/issues.json --today 2027-01-01   # simulate a future date
+```

@@ -1,0 +1,105 @@
+name: "Post a job"
+description: "Submit a CNS / QSP / pharmacometrics position for the NeuroQSP job board. Posts are reviewed by a moderator before publishing."
+title: "[Job] "
+labels: ["job-submission"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for posting with NeuroQSP! A moderator reviews every submission before it appears on
+        [neuroqsp.com/jobs](https://neuroqsp.com/jobs.html). Only positions relevant to quantitative
+        systems pharmacology, pharmacometrics, computational neuroscience, or CNS drug development are accepted.
+
+        **Listings expire after 60 days** (or your deadline, whichever comes first — 90 days max).
+        When the role is filled, please close this issue and the listing disappears automatically.
+
+  - type: input
+    id: job_title
+    attributes:
+      label: Job title
+      placeholder: "e.g. Senior QSP Scientist, Neuroscience"
+    validations:
+      required: true
+
+  - type: input
+    id: company
+    attributes:
+      label: Company or organization
+      placeholder: "e.g. Acme Therapeutics"
+    validations:
+      required: true
+
+  - type: input
+    id: location
+    attributes:
+      label: Location
+      placeholder: "e.g. Cambridge, MA, USA"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: job_type
+    attributes:
+      label: Position type
+      options:
+        - Full-time
+        - Part-time
+        - Contract
+        - Internship
+        - Postdoc
+        - PhD position
+        - Fellowship
+    validations:
+      required: true
+
+  - type: dropdown
+    id: work_mode
+    attributes:
+      label: Work arrangement
+      options:
+        - On-site
+        - Hybrid
+        - Remote
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: About the role
+      description: "A concise description: responsibilities, required background, what makes it a fit for this community. Plain text; 2–6 short paragraphs is ideal."
+    validations:
+      required: true
+
+  - type: textarea
+    id: apply
+    attributes:
+      label: How to apply
+      description: "Include a direct application link (https://…) and/or an email address, plus any instructions (reference code, documents to attach, etc.). At least one link or email is required."
+      placeholder: "https://careers.example.com/jobs/1234 — please mention 'NeuroQSP' in your cover letter."
+    validations:
+      required: true
+
+  - type: input
+    id: deadline
+    attributes:
+      label: Application deadline
+      description: "Optional. Format YYYY-MM-DD. The listing is removed on this date (or after 60 days if left blank; 90 days max)."
+      placeholder: "2026-11-30"
+
+  - type: input
+    id: contact
+    attributes:
+      label: Contact email (not published)
+      description: "Used only by moderators to verify the posting. Never shown on the site."
+      placeholder: "you@company.com"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: confirmation
+    attributes:
+      label: Confirmation
+      options:
+        - label: "This is a genuine, currently open position relevant to the NeuroQSP community, and I'm authorized to advertise it."
+          required: true

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Resources — NeuroQSP Working Group</title>
-  <meta name="description" content="A growing toolkit for quantitative systems pharmacology in the brain: workflows, reading, models, and tools.">
+  <title>Jobs — NeuroQSP Working Group</title>
+  <meta name="description" content="Open positions in quantitative systems pharmacology, pharmacometrics, and computational neuroscience, curated by the NeuroQSP Working Group.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -31,8 +31,8 @@
         <a href="index.html">Home</a>
         <a href="about.html">About</a>
         <a href="videos.html">Videos</a>
-        <a href="resources.html" class="active">Resources</a>
-        <a href="jobs.html">Jobs</a>
+        <a href="resources.html">Resources</a>
+        <a href="jobs.html" class="active">Jobs</a>
         <a href="join.html" class="btn btn--primary">Join the group</a>
       </nav>
     </div>
@@ -40,51 +40,32 @@
 
   <section class="hero">
     <div class="container" style="padding-top:64px; padding-bottom:64px;">
-      <p class="eyebrow">Toolkit</p>
-      <h1>Resources for neuro-QSP practitioners.</h1>
-      <p class="lead">A growing, community-curated collection of workflows, reading, models, and tools. Have something to add? <a href="mailto:neuroqsp@gmail.com" style="color:#bfe9e2;">Send it our way.</a></p>
+      <p class="eyebrow">Job board</p>
+      <h1>Careers in quantitative neuropharmacology.</h1>
+      <p class="lead">Open positions across QSP, pharmacometrics, computational neuroscience, and CNS drug development — reviewed by the working group before listing, and retired automatically when they close.</p>
+      <div class="cta-row">
+        <a href="post-a-job.html" class="btn btn--accent">Post a job →</a>
+        <a href="join.html" class="btn btn--ghost">Get openings by email</a>
+      </div>
     </div>
   </section>
 
   <section class="section">
     <div class="container">
-      <div class="grid grid-3">
-        <div class="card">
-          <div class="icon">▶</div>
-          <h3>Seminar recordings</h3>
-          <p>Our full library of recorded talks and working-group meetings, updated automatically.</p>
-          <p class="mt-1"><a href="videos.html">Watch videos →</a></p>
-        </div>
-        <div class="card">
-          <div class="icon">◎</div>
-          <h3>Foundational reading</h3>
-          <p>Key reviews and papers spanning QSP, pharmacometrics, and computational neuroscience.</p>
-          <p class="mt-1 text-muted">Curated list coming soon.</p>
-        </div>
-        <div class="card">
-          <div class="icon">⚙</div>
-          <h3>Models &amp; tools</h3>
-          <p>Open-source platforms and example models for building and simulating neuro-QSP workflows.</p>
-          <p class="mt-1 text-muted">Curated list coming soon.</p>
-        </div>
-        <div class="card">
-          <div class="icon">✦</div>
-          <h3>ISoP &amp; partners</h3>
-          <p>The broader pharmacometrics and QSP ecosystem we're part of.</p>
-          <p class="mt-1"><a href="https://www.go-isop.org" target="_blank" rel="noopener">Visit ISoP →</a></p>
-        </div>
-        <div class="card">
-          <div class="icon">✉</div>
-          <h3>Contribute a resource</h3>
-          <p>Know a workflow, dataset, or paper the community should see? We'd love to feature it.</p>
-          <p class="mt-1"><a href="mailto:neuroqsp@gmail.com">Suggest a resource →</a></p>
-        </div>
-        <div class="card">
-          <div class="icon">◈</div>
-          <h3>Join the group</h3>
-          <p>Members get new resources and seminar invitations as they're released.</p>
-          <p class="mt-1"><a href="join.html">Sign up →</a></p>
-        </div>
+      <div class="job-toolbar" id="job-toolbar" hidden>
+        <input id="q" type="search" placeholder="Search title, company, location…" aria-label="Search jobs">
+        <select id="f-type" aria-label="Filter by position type"><option value="">All position types</option></select>
+        <select id="f-mode" aria-label="Filter by work arrangement"><option value="">On-site, hybrid &amp; remote</option></select>
+      </div>
+      <p class="job-count" id="job-count"></p>
+
+      <div id="job-status" class="video-status"><div class="spinner"></div>Loading open positions…</div>
+      <div id="job-list" class="job-list" hidden></div>
+
+      <div class="subscribe-band mt-3">
+        <span style="font-weight:600; color:var(--ink);">Hiring for a CNS / QSP role?</span>
+        <a href="post-a-job.html" class="btn btn--primary">Post a job — it's free →</a>
+        <a href="post-a-job.html#guidelines" class="btn btn--outline">Posting guidelines</a>
       </div>
     </div>
   </section>
@@ -123,6 +104,8 @@
       </div>
     </div>
   </footer>
+
   <script>document.getElementById('year').textContent = new Date().getFullYear();</script>
+  <script src="js/jobs.js"></script>
 </body>
 </html>

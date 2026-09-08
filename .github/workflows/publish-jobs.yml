@@ -1,0 +1,68 @@
+name: Publish job board
+
+# Compiles approved job submissions (GitHub issues) into jobs.json and
+# retires expired listings. Nothing is published without the `approved`
+# label — moderators add it after reviewing a submission.
+on:
+  issues:
+    types: [labeled, unlabeled, edited, closed, reopened]
+  schedule:
+    - cron: "15 6 * * *"   # daily at 06:15 UTC — retires expired posts
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths: [ "scripts/build-jobs.mjs" ]
+
+permissions:
+  contents: write
+  issues: write
+
+concurrency:
+  group: publish-jobs
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    # Only react to issue events that involve job submissions.
+    if: github.event_name != 'issues' || contains(github.event.issue.labels.*.name, 'job-submission')
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Fetch approved submissions
+        run: |
+          gh issue list --repo "$GITHUB_REPOSITORY" \
+            --label job-submission --label approved --state open --limit 200 \
+            --json number,title,body,createdAt,url,labels > issues.json
+          echo "Fetched $(jq length issues.json) approved submission(s)"
+
+      - name: Build jobs.json
+        run: node scripts/build-jobs.mjs issues.json
+
+      - name: Close expired listings
+        run: |
+          for n in $(jq -r '.[]' expired.json); do
+            gh issue close "$n" --repo "$GITHUB_REPOSITORY" --reason "not planned" \
+              --comment "This listing has reached its expiry date and has been removed from the NeuroQSP job board. If the position is still open, reopen this issue and update the **Application deadline** (a moderator will re-approve), or submit a fresh posting. Thanks for posting with NeuroQSP!" \
+              && echo "closed #$n" || echo "could not close #$n"
+          done
+
+      - name: Commit jobs.json if changed
+        run: |
+          rm -f issues.json expired.json
+          if ! git diff --quiet jobs.json; then
+            git config user.name "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add jobs.json
+            git commit -m "chore: publish job board"
+            git push
+          else
+            echo "No changes to jobs.json"
+          fi
