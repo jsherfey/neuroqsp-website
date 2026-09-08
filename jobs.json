@@ -1,20 +1,4 @@
 {
-  "updated": "2026-09-08T20:45:42.455Z",
-  "jobs": [
-    {
-      "id": 1,
-      "title": "Round-Trip Test: QSP Scientist (test posting, will be closed)",
-      "company": "NeuroQSP Working Group",
-      "location": "Anywhere",
-      "type": "Full-time",
-      "mode": "Remote",
-      "summary": "This is a temporary test listing used to verify the job board pipeline end to end. It will be closed shortly after it appears.\n\nIf you can read this on neuroqsp.com, the submit → approve → publish path works.",
-      "applyUrl": "https://neuroqsp.com/post-a-job.html",
-      "applyEmail": "",
-      "applyNote": "https://neuroqsp.com/post-a-job.html — this is a test; please do not apply.",
-      "posted": "2026-09-08",
-      "expires": "2026-11-07",
-      "url": "https://github.com/jsherfey/neuroqsp-website/issues/1"
-    }
-  ]
+  "updated": "2026-09-08T20:46:55.257Z",
+  "jobs": []
 }
