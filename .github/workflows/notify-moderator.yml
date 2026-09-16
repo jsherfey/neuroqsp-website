@@ -1,0 +1,110 @@
+name: Notify moderator of new job posting
+
+# Emails the moderator inbox whenever a job submission is filed, so nothing
+# waits unnoticed in the queue. Sends via Gmail SMTP from the moderator
+# account itself, which needs ONE repository secret:
+#   GMAIL_APP_PASSWORD  — an App Password for the MODERATOR_EMAIL account
+#                         (see README → "Job board" → "Email notifications").
+on:
+  issues:
+    types: [opened]
+  workflow_dispatch:           # manual test: Actions → this workflow → Run workflow
+    inputs:
+      issue_number:
+        description: "Issue number to send a test notification for"
+        required: true
+        default: "2"
+
+env:
+  MODERATOR_EMAIL: neuroqsp@gmail.com   # recipient AND the Gmail account used to send
+
+permissions:
+  issues: read
+
+jobs:
+  notify:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      contains(github.event.issue.labels.*.name, 'job-submission') ||
+      startsWith(github.event.issue.title, '[Job]')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Load issue
+        # Issue fields are passed through env vars, never interpolated into the
+        # script, so a malicious title/body cannot inject shell commands.
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          DISPATCH_NUMBER: ${{ github.event.inputs.issue_number }}
+          EV_NUMBER: ${{ github.event.issue.number }}
+          EV_TITLE: ${{ github.event.issue.title }}
+          EV_BODY: ${{ github.event.issue.body }}
+          EV_URL: ${{ github.event.issue.html_url }}
+          EV_AUTHOR: ${{ github.event.issue.user.login }}
+        run: |
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            gh api "repos/$GITHUB_REPOSITORY/issues/$DISPATCH_NUMBER" > issue.json
+            jq -r .number   issue.json > number.txt
+            jq -r .title    issue.json > title.txt
+            jq -r .body     issue.json > body.txt
+            jq -r .html_url issue.json > url.txt
+            jq -r .user.login issue.json > author.txt
+          else
+            printf '%s' "$EV_NUMBER" > number.txt
+            printf '%s' "$EV_TITLE"  > title.txt
+            printf '%s' "$EV_BODY"   > body.txt
+            printf '%s' "$EV_URL"    > url.txt
+            printf '%s' "$EV_AUTHOR" > author.txt
+          fi
+          echo "Issue #$(cat number.txt): $(cat title.txt) (by $(cat author.txt))"
+
+      - name: Compose email
+        run: |
+          N=$(cat number.txt); TITLE=$(cat title.txt); URL=$(cat url.txt); AUTHOR=$(cat author.txt)
+          QUEUE="https://github.com/$GITHUB_REPOSITORY/issues?q=is%3Aopen+label%3Ajob-submission+-label%3Aapproved"
+          # Strip anything that could smuggle extra headers into the subject line.
+          SAFE_TITLE=$(printf '%s' "$TITLE" | tr -d '\r\n' | cut -c1-150)
+          {
+            echo "From: NeuroQSP Job Board <$MODERATOR_EMAIL>"
+            echo "To: $MODERATOR_EMAIL"
+            echo "Subject: [NeuroQSP jobs] New posting to review: $SAFE_TITLE"
+            echo "MIME-Version: 1.0"
+            echo "Content-Type: text/plain; charset=UTF-8"
+            echo "Content-Transfer-Encoding: 8bit"
+            echo
+            echo "A new job posting was submitted to the NeuroQSP job board and is waiting for review."
+            echo
+            echo "  Submission:  #$N — $TITLE"
+            echo "  Submitted by: @$AUTHOR"
+            echo "  Review it:   $URL"
+            echo "  Full queue:  $QUEUE"
+            echo
+            echo "To publish: open the link, check the details and apply link, then add the 'approved' label."
+            echo "To decline: add the 'rejected' or 'spam' label and close the issue."
+            echo
+            echo "------------------------------------------------------------"
+            echo "SUBMISSION DETAILS"
+            echo "------------------------------------------------------------"
+            echo
+            cat body.txt
+            echo
+            echo "------------------------------------------------------------"
+            echo "Sent automatically by github.com/$GITHUB_REPOSITORY"
+          } > mail.txt
+          echo "== email preview =="; head -20 mail.txt
+
+      - name: Send via Gmail
+        env:
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+        run: |
+          if [ -z "$GMAIL_APP_PASSWORD" ]; then
+            echo "::error::Repository secret GMAIL_APP_PASSWORD is not set, so the notification could not be sent. See README → Job board → Email notifications."
+            exit 1
+          fi
+          curl --silent --show-error --ssl-reqd \
+            --url "smtps://smtp.gmail.com:465" \
+            --user "$MODERATOR_EMAIL:$GMAIL_APP_PASSWORD" \
+            --mail-from "$MODERATOR_EMAIL" \
+            --mail-rcpt "$MODERATOR_EMAIL" \
+            --upload-file mail.txt
+          echo "Notification sent to $MODERATOR_EMAIL"

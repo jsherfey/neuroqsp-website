@@ -157,6 +157,28 @@ To force a rebuild at any time: **Actions → "Publish job board" → Run workfl
 | **Filled roles vanish fast** | Posters close their own issue when hired; the Action triggers on close and removes the listing. |
 | **Visible dates** | Each card shows "Posted" and "Closes" dates plus "New" / "Closing soon" badges. |
 
+### Email notifications
+
+`.github/workflows/notify-moderator.yml` emails **neuroqsp@gmail.com** the
+moment a job submission is filed, with the full details and a link to review
+it. It sends through Gmail from that same account, which needs a one-time
+setup (about two minutes):
+
+1. Sign in to the **neuroqsp@gmail.com** Google account and make sure
+   **2-Step Verification** is on (Google Account → Security). App Passwords
+   require it.
+2. Go to <https://myaccount.google.com/apppasswords>, create an app password
+   named e.g. `NeuroQSP job board`, and copy the 16-character code.
+3. In the repo: **Settings → Secrets and variables → Actions → New repository
+   secret**. Name: `GMAIL_APP_PASSWORD`. Value: the code from step 2.
+4. Test it: **Actions → "Notify moderator of new job posting" → Run workflow**
+   (leave the issue number as is). An email should arrive within a minute.
+
+Until the secret exists, the workflow fails with a clear error and no email is
+sent; nothing else on the board is affected. To change the recipient, edit
+`MODERATOR_EMAIL` at the top of the workflow (it must be the Gmail account the
+app password belongs to).
+
 ### Important: repo visibility
 
 Issue Forms only accept submissions from people who can see the repository.
