@@ -34,6 +34,19 @@ export default {
     if (url.pathname === "/health" && request.method === "GET")
       return json({ ok: true, service: "neuroqsp-jobs" }, 200, cors);
 
+    // Ops check: is the stored GitHub token valid, and for which account?
+    // Reveals only the login and scopes, never the token.
+    if (url.pathname === "/diag" && request.method === "GET") {
+      if (!env.GITHUB_TOKEN) return json({ github: { ok: false, error: "GITHUB_TOKEN secret not set" } }, 200, cors);
+      const r = await fetch("https://api.github.com/user", {
+        headers: { "Authorization": `Bearer ${env.GITHUB_TOKEN}`, "Accept": "application/vnd.github+json", "User-Agent": "neuroqsp-jobs-relay" },
+      });
+      const scopes = r.headers.get("x-oauth-scopes");
+      if (r.status !== 200) return json({ github: { ok: false, status: r.status, error: (await r.json().catch(() => ({}))).message || "request failed" } }, 200, cors);
+      const u = await r.json();
+      return json({ github: { ok: true, login: u.login, scopes, tokenType: scopes === null ? "fine-grained (cannot reach this repo)" : "classic" } }, 200, cors);
+    }
+
     if (request.method === "OPTIONS")
       return new Response(null, { status: cors ? 204 : 403, headers: cors || {} });
 
