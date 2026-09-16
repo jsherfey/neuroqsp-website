@@ -1,21 +1,6 @@
 {
-  "updated": "2026-09-16T16:19:59.017Z",
+  "updated": "2026-09-16T16:20:58.262Z",
   "jobs": [
-    {
-      "id": 3,
-      "title": "Round-Trip Test via website form (will be removed)",
-      "company": "NeuroQSP Working Group",
-      "location": "Anywhere",
-      "type": "Contract",
-      "mode": "Remote",
-      "summary": "This is a temporary test listing submitted through the website form, with no GitHub login, to verify the relay end to end. It will be removed shortly after it appears.",
-      "applyUrl": "https://neuroqsp.com/post-a-job.html",
-      "applyEmail": "",
-      "applyNote": "https://neuroqsp.com/post-a-job.html — this is a test; please do not apply.",
-      "posted": "2026-09-16",
-      "expires": "2026-11-15",
-      "url": "https://github.com/jsherfey/neuroqsp-website/issues/3"
-    },
     {
       "id": 2,
       "title": "Hypothetical QSP role",
