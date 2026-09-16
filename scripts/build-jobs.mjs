@@ -27,6 +27,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
+import { parseIssueForm, extractApply } from "./lib/job-rules.mjs";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT_JOBS = join(ROOT, "jobs.json");
@@ -56,33 +57,8 @@ function parseIsoDate(s) {
   return isNaN(d) || isoDate(d) !== s ? null : d;
 }
 
-// GitHub Issue Forms render the body as "### <Label>\n\n<value>" sections.
-function parseForm(body) {
-  const fields = {};
-  const re = /^###\s+(.+?)\s*$/gm;
-  const heads = [...(body || "").matchAll(re)];
-  heads.forEach((m, i) => {
-    const start = m.index + m[0].length;
-    const end = i + 1 < heads.length ? heads[i + 1].index : body.length;
-    let value = body.slice(start, end).trim();
-    if (value === "_No response_") value = "";
-    fields[m[1].trim().toLowerCase()] = value;
-  });
-  return fields;
-}
-
-const URL_RE = /https?:\/\/[^\s<>)\]"']+/i;
-const EMAIL_RE = /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i;
-
-function extractApply(text) {
-  const url = (text.match(URL_RE) || [])[0] || "";
-  const email = (text.match(EMAIL_RE) || [])[0] || "";
-  // Only https/http links are allowed; strip a trailing period/comma.
-  const cleanUrl = url.replace(/[.,]+$/, "");
-  if (cleanUrl && !/^https?:\/\//i.test(cleanUrl)) return null;
-  if (!cleanUrl && !email) return null;
-  return { applyUrl: cleanUrl, applyEmail: email, applyNote: text.trim() };
-}
+// Issue-Form body parsing and apply-link rules live in scripts/lib/job-rules.mjs
+const parseForm = parseIssueForm;
 
 function hasLabel(issue, name) {
   return (issue.labels || []).some((l) => (typeof l === "string" ? l : l.name)?.toLowerCase() === name);

@@ -118,7 +118,9 @@ moderator's approval.
 ### Moderating (what the chair does)
 
 1. A new submission arrives as an issue titled `[Job] …` with the
-   `job-submission` label. You get a GitHub notification.
+   `job-submission` label. Website-form submissions are authored by
+   **@neuroqsp** (the relay); GitHub-form submissions by the poster. You get
+   an email (see *Email notifications*) and a GitHub notification.
 2. Open it, sanity-check it (real role? relevant? does the apply link work?).
    The **Contact email** field is for you only — it is never published.
 3. Add the **`approved`** label. The Action runs immediately and the listing
@@ -132,7 +134,9 @@ moderator's approval.
    issue with the exact reason and adds the **`needs-info`** label. Once the
    poster (or you) edits the submission to fix it, it publishes automatically
    and `needs-info` is removed. Filter for open `needs-info` issues to see
-   everything stuck.
+   everything stuck. For website-form posts the poster can't see GitHub, so
+   the Action also **emails them** (you in Cc); paste their reply into the
+   issue body and it republishes.
 
 To force a rebuild at any time: **Actions → "Publish job board" → Run workflow.**
 
@@ -146,6 +150,9 @@ To force a rebuild at any time: **Actions → "Publish job board" → Run workfl
 | **Structured, validated fields** | Title, organization, location, type, arrangement, description, and apply info are all required; the build script skips anything incomplete and prints a warning. |
 | **Link safety** | Apply links must be `https://` (or an email). `javascript:`, `data:`, and other schemes are rejected. All output is HTML-escaped; external links use `rel="noopener nofollow"`. |
 | **Relevance policy** | Stated on `post-a-job.html#guidelines` so you can point to it when rejecting. |
+| **Turnstile + honeypot** | Website-form submissions must pass Cloudflare's invisible CAPTCHA; a hidden field catches naive bots. |
+| **Rate limit + dedupe** | 3 submissions per IP per hour; identical email+title blocked for 24 h. |
+| **Origin lock** | The relay only accepts requests from neuroqsp.com. |
 
 ### Anti-stale design
 
@@ -179,16 +186,72 @@ sent; nothing else on the board is affected. To change the recipient, edit
 `MODERATOR_EMAIL` at the top of the workflow (it must be the Gmail account the
 app password belongs to).
 
-### Important: repo visibility
+### Login-free submissions (the relay)
 
-Issue Forms only accept submissions from people who can see the repository.
-**If this repo is private, outsiders cannot post.** Either make the repo
-public (the site is public anyway and contains no secrets), or keep it
-private and create a small *public* companion repo (e.g. `neuroqsp-jobs`)
-that holds only the issue template — then point `SUBMIT_URL` in
-`post-a-job.html` at it and set `--repo` in the workflow's `gh issue list`
-step accordingly (closing expired issues cross-repo then needs a
-fine-grained PAT with Issues: write stored as a repo secret).
+`post-a-job.html` has an on-site form that needs no account. Because GitHub
+Pages is static, the form posts to a tiny **Cloudflare Worker** (`relay/`)
+which screens the submission and files the GitHub issue as the group's own
+account, **@neuroqsp**. From there the normal pipeline takes over (label →
+moderator email → `approved` → `jobs.json`). GitHub users can still use the
+issue form directly; both paths produce identical issues.
+
+What the Worker does on every submission, in order:
+
+1. Rejects calls that don't come from `neuroqsp.com` (CORS origin allow-list).
+2. Drops bot submissions that filled the hidden honeypot field (bots get a
+   fake "success"; nothing is filed).
+3. Verifies the **Cloudflare Turnstile** token (invisible CAPTCHA).
+4. Validates every field with the same rules as the page and the build script
+   (`scripts/lib/job-rules.mjs` — one source of truth).
+5. Enforces **3 submissions per IP per hour** and blocks an identical
+   email+title resubmission for 24 hours (Workers KV).
+6. Creates the issue with the `job-submission` label; the
+   `notify-moderator` workflow re-applies the label in case GitHub dropped it
+   (the bot account has no push access).
+
+**Files:** `relay/wrangler.toml` (config), `relay/src/index.js` (the Worker),
+`relay/.dev.vars.example` (local secrets template). The page reads
+`RELAY_URL` and `TURNSTILE_SITE_KEY` from the small config block at the top
+of `post-a-job.html`.
+
+#### One-time setup
+
+1. **Cloudflare** (free account): `cd relay && npx wrangler login`.
+2. **KV namespace:** `npx wrangler kv namespace create RATE` → paste the id
+   into `relay/wrangler.toml`.
+3. **Turnstile:** Cloudflare dashboard → Turnstile → *Add widget* → hostname
+   `neuroqsp.com` → copy the **site key** into `post-a-job.html` and set the
+   **secret**: `npx wrangler secret put TURNSTILE_SECRET`.
+4. **GitHub token for @neuroqsp:** signed in as neuroqsp → Settings →
+   Developer settings → Personal access tokens (classic) → scope
+   **`public_repo` only** → expiry 1 year → `npx wrangler secret put GITHUB_TOKEN`.
+   (Fine-grained tokens can't target a repo owned by another personal
+   account, hence classic. `public_repo` on an account that owns nothing
+   keeps the blast radius to "can open issues on public repos".)
+   **Renewal:** the token expires one year after creation; when it does the
+   form shows the email fallback and Worker logs show HTTP 401 from GitHub.
+   Create a new token and run `wrangler secret put GITHUB_TOKEN` again.
+5. **Deploy:** `npx wrangler deploy` → paste the printed URL (plus `/submit`)
+   into `RELAY_URL` in `post-a-job.html`, commit, push.
+
+#### Testing the relay locally
+
+```bash
+cd relay && cp .dev.vars.example .dev.vars   # Turnstile TEST secret + DRY_RUN=1
+npx wrangler dev --var ALLOWED_ORIGINS:http://localhost:8000
+# in another terminal, from the repo root:
+python3 -m http.server 8000                   # then open http://localhost:8000/post-a-job.html
+```
+With the test site key `1x00000000000000000000AA` in the page, Turnstile
+always passes; `DRY_RUN=1` skips GitHub and logs what would be filed.
+Health check: `curl https://<worker-url>/health`.
+
+#### Privacy note
+
+Issues on a public repo are public, so the poster's contact email is visible
+in the issue (as it always was for the GitHub form). It is never shown on the
+website. If that becomes a concern, the cleanest fix is to file submissions in
+a small **private** companion repo and have the publish workflow read from it.
 
 ### Testing the build locally
 

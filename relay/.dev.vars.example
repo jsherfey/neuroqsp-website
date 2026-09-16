@@ -1,0 +1,6 @@
+# Copy to .dev.vars for local `wrangler dev`. Never commit .dev.vars.
+# Turnstile's public TEST secret — always passes. Pair with site key 1x00000000000000000000AA in the page.
+TURNSTILE_SECRET=1x0000000000000000000000000000000AA
+# Leave empty + DRY_RUN=1 to test without touching GitHub.
+GITHUB_TOKEN=
+DRY_RUN=1

@@ -22,11 +22,31 @@ permissions:
   issues: read
 
 jobs:
-  notify:
+  # Submissions from the website form are filed by the group's bot account
+  # (neuroqsp), which has no push access, so GitHub ignores the label it asks
+  # for at creation time. Add it here so the rest of the pipeline sees it.
+  label:
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      contains(github.event.issue.labels.*.name, 'job-submission') ||
+      github.event_name == 'issues' &&
+      github.event.issue.user.login == 'neuroqsp' &&
       startsWith(github.event.issue.title, '[Job]')
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      NUMBER: ${{ github.event.issue.number }}
+    steps:
+      - run: gh issue edit "$NUMBER" --repo "$GITHUB_REPOSITORY" --add-label job-submission
+
+  notify:
+    needs: [label]
+    if: >-
+      always() && (
+        github.event_name == 'workflow_dispatch' ||
+        contains(github.event.issue.labels.*.name, 'job-submission') ||
+        startsWith(github.event.issue.title, '[Job]')
+      )
     runs-on: ubuntu-latest
     steps:
       - name: Load issue

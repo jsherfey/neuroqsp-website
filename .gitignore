@@ -12,3 +12,7 @@ npm-debug.log*
 # job-board build scratch (never committed)
 expired.json
 skipped.json
+
+# Cloudflare Worker (relay/)
+relay/.wrangler/
+relay/.dev.vars

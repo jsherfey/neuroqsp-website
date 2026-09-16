@@ -58,20 +58,68 @@ jobs:
         # For approved issues the build could not publish, leave one comment
         # explaining why and add `needs-info`. Skips issues that already carry
         # an identical bot comment, so daily runs don't repeat themselves.
+        # Website-form submissions are filed by the bot account, so their
+        # posters never see GitHub comments: those posters are emailed instead
+        # (moderator in Cc) using the same Gmail credentials as notifications.
+        env:
+          GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
+          MODERATOR_EMAIL: neuroqsp@gmail.com
+          BOT_LOGIN: neuroqsp
         run: |
+          marker="<!-- neuroqsp-bot:skipped -->"
           jq -c '.[]' skipped.json | while read -r row; do
             n=$(jq -r .number <<<"$row"); reason=$(jq -r .reason <<<"$row")
-            marker="<!-- neuroqsp-bot:skipped -->"
+            gh api "repos/$GITHUB_REPOSITORY/issues/$n" > issue.json
+            author=$(jq -r .user.login issue.json)
+            if [ "$author" = "$BOT_LOGIN" ]; then
+              howto="This posting came in through the website form, so the poster has been emailed. A moderator can paste their corrections into the issue body above; it will then be re-checked and published automatically."
+            else
+              howto="Please edit the submission above (click the ⋯ menu on the first post → **Edit**) to fix this. It will be re-checked and published automatically — no need to resubmit."
+            fi
             body="${marker}
           Thanks for the posting! It's been approved, but it **can't be published yet**:
 
           > ${reason}
 
-          Please edit the submission above (click the ⋯ menu on the first post → **Edit**) to fix this. It will be re-checked and published automatically — no need to resubmit."
+          ${howto}"
             last=$(gh api "repos/$GITHUB_REPOSITORY/issues/$n/comments?per_page=100" --jq '[.[] | select(.body | contains("'"$marker"'"))] | last | .body // ""')
             if [ "$last" = "$body" ]; then echo "#$n: already notified"; continue; fi
             gh issue comment "$n" --repo "$GITHUB_REPOSITORY" --body "$body" >/dev/null && echo "#$n: commented"
             gh issue edit "$n" --repo "$GITHUB_REPOSITORY" --add-label needs-info >/dev/null || true
+
+            # Email the anonymous poster (website-form submissions only).
+            if [ "$author" = "$BOT_LOGIN" ] && [ -n "$GMAIL_APP_PASSWORD" ]; then
+              jq -r .body issue.json > body.txt
+              to=$(awk '/^### Contact email/{f=1;next} /^### /{f=0} f && NF {print; exit}' body.txt | tr -d '[:space:]')
+              title=$(awk '/^### Job title/{f=1;next} /^### /{f=0} f && NF {print; exit}' body.txt | tr -d '\r\n' | cut -c1-150)
+              if printf '%s' "$to" | grep -Eq '^[^@[:space:]]+@[^@[:space:]]+\.[a-zA-Z]{2,}$'; then
+                {
+                  echo "From: NeuroQSP Job Board <$MODERATOR_EMAIL>"
+                  echo "To: $to"
+                  echo "Cc: $MODERATOR_EMAIL"
+                  echo "Reply-To: $MODERATOR_EMAIL"
+                  echo "Subject: [NeuroQSP jobs] Your posting needs one more detail (ref #$n): $title"
+                  echo "MIME-Version: 1.0"
+                  echo "Content-Type: text/plain; charset=UTF-8"
+                  echo
+                  echo "Thanks for posting \"$title\" on the NeuroQSP job board (reference #$n)."
+                  echo
+                  echo "It has been approved by a moderator, but it can't be published yet:"
+                  echo
+                  echo "  $reason"
+                  echo
+                  echo "Just reply to this email with the missing information and we'll update the listing for you."
+                  echo
+                  echo "— NeuroQSP Working Group · https://neuroqsp.com/jobs.html"
+                } > poster-mail.txt
+                curl --silent --show-error --ssl-reqd --url "smtps://smtp.gmail.com:465" \
+                  --user "$MODERATOR_EMAIL:$GMAIL_APP_PASSWORD" --mail-from "$MODERATOR_EMAIL" \
+                  --mail-rcpt "$to" --mail-rcpt "$MODERATOR_EMAIL" --upload-file poster-mail.txt \
+                  && echo "#$n: emailed poster" || echo "#$n: could not email poster"
+              else
+                echo "#$n: no valid contact email to notify"
+              fi
+            fi
           done
           # Published listings no longer need info.
           for n in $(jq -r '.jobs[].id' jobs.json); do
@@ -80,7 +128,7 @@ jobs:
 
       - name: Commit jobs.json if changed
         run: |
-          rm -f issues.json expired.json skipped.json
+          rm -f issues.json expired.json skipped.json issue.json body.txt poster-mail.txt
           if ! git diff --quiet jobs.json; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"

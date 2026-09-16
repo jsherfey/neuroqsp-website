@@ -9,6 +9,20 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/styles.css">
+  <script>
+    // ---- Job form configuration (fill these in after deploying relay/) ----
+    window.NEUROQSP_JOBS = {
+      RELAY_URL: "REPLACE_WITH_WORKER_URL/submit",   // e.g. https://neuroqsp-jobs.<you>.workers.dev/submit
+      TURNSTILE_SITE_KEY: "REPLACE_WITH_TURNSTILE_SITE_KEY",
+    };
+    window.onTurnstileLoad = function () {
+      var k = window.NEUROQSP_JOBS.TURNSTILE_SITE_KEY;
+      if (window.turnstile && k && !/^REPLACE/.test(k)) {
+        window.turnstile.render("#turnstile", { sitekey: k, theme: "light" });
+      }
+    };
+  </script>
+  <script src="https://challenges.cloudflare.com/turnstile/v0/api.js?onload=onTurnstileLoad&render=explicit" async defer></script>
 </head>
 <body>
 
@@ -42,9 +56,9 @@
     <div class="container" style="padding-top:64px; padding-bottom:64px;">
       <p class="eyebrow">Job board</p>
       <h1>Post a job. Reach the people who build brain models.</h1>
-      <p class="lead">Listings are free and go straight to modelers, pharmacologists, and neuroscientists across academia, industry, and regulators. Every post is reviewed by a moderator before it appears.</p>
+      <p class="lead">Listings are free, no account needed, and go straight to modelers, pharmacologists, and neuroscientists across academia, industry, and regulators. Every post is reviewed by a moderator before it appears.</p>
       <div class="cta-row">
-        <a id="post-btn" href="#" class="btn btn--accent">Submit a listing →</a>
+        <a href="#job-form" class="btn btn--accent">Submit a listing ↓</a>
         <a href="jobs.html" class="btn btn--ghost">View open positions</a>
       </div>
     </div>
@@ -53,22 +67,80 @@
   <!-- How it works -->
   <section class="section">
     <div class="container">
-      <div class="split">
+      <div class="split" style="align-items:flex-start;">
         <div>
           <p class="eyebrow">How it works</p>
           <h2>Three steps, no account on our site.</h2>
           <div class="checklist" style="gap:22px;">
-            <div class="step"><div class="n">1</div><div><h3>Fill in the form</h3><p>Title, organization, location, a short description, and how to apply. Takes about five minutes. You'll sign in with a free GitHub account, which keeps submissions accountable.</p></div></div>
-            <div class="step"><div class="n">2</div><div><h3>We review it</h3><p>A NeuroQSP moderator checks that it's a genuine, relevant position — usually within a few days. You'll get a notification when it's approved.</p></div></div>
+            <div class="step"><div class="n">1</div><div><h3>Fill in the form</h3><p>Title, organization, location, a short description, and how to apply. Takes about five minutes — no account or sign-in required.</p></div></div>
+            <div class="step"><div class="n">2</div><div><h3>We review it</h3><p>A NeuroQSP moderator checks that it's a genuine, relevant position — usually within a few days. If anything is missing we'll email you.</p></div></div>
             <div class="step"><div class="n">3</div><div><h3>It goes live — and retires itself</h3><p>Your listing appears on the <a href="jobs.html">job board</a> with a clear apply link. It's removed automatically after 60 days (or your deadline), so the board never shows stale roles.</p></div></div>
           </div>
         </div>
         <div>
-          <div class="form-card">
-            <h3 class="mt-0">Ready to post?</h3>
-            <p>The form opens on GitHub — the same place we moderate and publish listings. It's free.</p>
-            <a id="post-btn-2" href="#" class="btn btn--primary" style="width:100%; justify-content:center;">Open the job form →</a>
-            <p class="hint mt-2" style="font-size:.86rem;"><strong>No GitHub account?</strong> Email your listing to <a id="mail-link" href="mailto:neuroqsp@gmail.com">neuroqsp@gmail.com</a> using the template below and we'll post it for you.</p>
+          <form id="job-form" class="form-card" novalidate>
+            <h3 class="mt-0">Post a job</h3>
+            <p class="text-muted" style="margin-top:4px;">Free · reviewed before publishing · no account needed.</p>
+
+            <div class="field">
+              <label for="jf-title">Job title</label>
+              <input id="jf-title" name="title" type="text" required maxlength="150" placeholder="e.g. Senior QSP Scientist, Neuroscience">
+            </div>
+            <div class="field">
+              <label for="jf-company">Company or organization</label>
+              <input id="jf-company" name="company" type="text" required maxlength="120" autocomplete="organization">
+            </div>
+            <div class="field">
+              <label for="jf-location">Location</label>
+              <input id="jf-location" name="location" type="text" required maxlength="120" placeholder="e.g. Cambridge, MA, USA">
+            </div>
+            <div class="grid grid-2" style="gap:14px;">
+              <div class="field">
+                <label for="jf-type">Position type</label>
+                <select id="jf-type" name="type" required><option value="">Select…</option></select>
+              </div>
+              <div class="field">
+                <label for="jf-mode">Work arrangement</label>
+                <select id="jf-mode" name="mode" required><option value="">Select…</option></select>
+              </div>
+            </div>
+            <div class="field">
+              <label for="jf-summary">About the role</label>
+              <textarea id="jf-summary" name="summary" rows="6" required maxlength="6000" placeholder="Responsibilities, required background, and what makes it a fit for this community. 2–6 short paragraphs is ideal."></textarea>
+            </div>
+            <div class="field">
+              <label for="jf-apply">How to apply</label>
+              <textarea id="jf-apply" name="apply" rows="3" required maxlength="1000" placeholder="https://careers.example.com/jobs/1234 — please mention 'NeuroQSP' in your cover letter."></textarea>
+              <div class="hint">Must include a direct <strong>https://</strong> application link and/or an email address.</div>
+            </div>
+            <div class="grid grid-2" style="gap:14px;">
+              <div class="field">
+                <label for="jf-deadline">Application deadline <span class="text-muted">(optional)</span></label>
+                <input id="jf-deadline" name="deadline" type="date">
+                <div class="hint">Listing is removed on this date, or after 60 days if blank (90 max).</div>
+              </div>
+              <div class="field">
+                <label for="jf-contact">Your contact email</label>
+                <input id="jf-contact" name="contact" type="email" required maxlength="254" autocomplete="email">
+                <div class="hint">Not shown on the job board. Used by moderators to verify the posting and reach you.</div>
+              </div>
+            </div>
+            <div class="field" style="display:flex; gap:10px; align-items:flex-start;">
+              <input id="jf-confirmed" name="confirmed" type="checkbox" required style="margin-top:5px; width:auto;">
+              <label for="jf-confirmed" style="font-weight:500; margin:0;">This is a genuine, currently open position relevant to the NeuroQSP community, and I'm authorized to advertise it.</label>
+            </div>
+            <!-- honeypot: hidden from humans, tempting to bots -->
+            <div class="field" aria-hidden="true" style="position:absolute; left:-9999px; top:-9999px;">
+              <label for="jf-website">Website</label>
+              <input id="jf-website" name="website" type="text" tabindex="-1" autocomplete="off">
+            </div>
+            <div id="turnstile" class="field"></div>
+
+            <ul id="jf-errors" class="checklist" style="color:#b42318; gap:6px; margin:0 0 14px; display:none;"></ul>
+            <button id="jf-submit" type="submit" class="btn btn--primary" style="width:100%; justify-content:center;">Submit for review →</button>
+            <p id="jf-status" class="hint" style="margin-top:12px;"></p>
+
+            <p class="hint mt-2" style="font-size:.86rem;"><strong>Prefer email?</strong> Send your listing to <a id="mail-link" href="mailto:neuroqsp@gmail.com">neuroqsp@gmail.com</a> using the template below and we'll post it for you. <strong>Have a GitHub account?</strong> You can also <a href="https://github.com/jsherfey/neuroqsp-website/issues/new?template=job-post.yml" target="_blank" rel="noopener">use the GitHub form</a>.</p>
             <details class="mt-1">
               <summary style="cursor:pointer; font-weight:600; color:var(--brand-2);">Email template</summary>
               <pre style="white-space:pre-wrap; font-size:.82rem; background:var(--bg-soft); padding:12px; border-radius:10px; margin-top:8px;">Job title:
@@ -82,6 +154,14 @@ How to apply: (link and/or email + instructions)
 Application deadline (optional, YYYY-MM-DD):
 Your contact email (not published):</pre>
             </details>
+          </form>
+
+          <div id="jf-success" class="form-card" hidden>
+            <h3 class="mt-0">✅ Thanks — your posting is in the review queue.</h3>
+            <p>Reference: <strong id="jf-ref"></strong></p>
+            <p>A moderator will review it within a few days. If anything is missing, we'll email you at <strong id="jf-echo-email"></strong>.</p>
+            <p>To edit or withdraw the listing, email <a href="mailto:neuroqsp@gmail.com">neuroqsp@gmail.com</a> and quote your reference number.</p>
+            <a href="jobs.html" class="btn btn--outline mt-1">View the job board →</a>
           </div>
         </div>
       </div>
@@ -115,11 +195,11 @@ Your contact email (not published):</pre>
         </div>
         <div class="card">
           <h3>🛡️ How we keep spam out</h3>
-          <p>Nothing appears without human approval. Submissions require a signed-in account and a moderator-only contact email so we can verify the poster. Abusive accounts are blocked.</p>
+          <p>Nothing appears without human approval. Submissions pass an automated verification check and rate limit, and include a contact email so moderators can verify the poster. Abusive sources are blocked.</p>
         </div>
         <div class="card">
           <h3>✏️ Edits &amp; removals</h3>
-          <p>Edit your submission any time — changes are re-reviewed and republished automatically. Need a listing taken down fast? Close the submission or email <a href="mailto:neuroqsp@gmail.com">neuroqsp@gmail.com</a>.</p>
+          <p>To change or remove a listing, email <a href="mailto:neuroqsp@gmail.com">neuroqsp@gmail.com</a> and quote your reference number. Removals are usually done within a day.</p>
         </div>
       </div>
     </div>
@@ -162,12 +242,67 @@ Your contact email (not published):</pre>
 
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
-    // Where job submissions live. Change this one line if the submissions
-    // repository ever moves (see README → "Job board").
-    const SUBMIT_URL = "https://github.com/jsherfey/neuroqsp-website/issues/new?template=job-post.yml";
-    ["post-btn", "post-btn-2"].forEach((id) => { const a = document.getElementById(id); a.href = SUBMIT_URL; a.target = "_blank"; a.rel = "noopener"; });
     document.getElementById('mail-link').href =
       "mailto:neuroqsp@gmail.com?subject=" + encodeURIComponent("Job posting for the NeuroQSP job board");
+  </script>
+  <script type="module">
+    import { validateSubmission, POSITION_TYPES, WORK_MODES } from "./scripts/lib/job-rules.mjs";
+
+    const CFG = window.NEUROQSP_JOBS;
+    const $ = (id) => document.getElementById(id);
+    const form = $("job-form"), errors = $("jf-errors"), status = $("jf-status"), submit = $("jf-submit");
+    const FALLBACK = 'Please email your listing to <a href="mailto:neuroqsp@gmail.com">neuroqsp@gmail.com</a> instead (template below).';
+
+    // Options come from the shared rules file so the page, relay, and build script never drift.
+    const fill = (sel, opts) => opts.forEach((o) => { const e = document.createElement("option"); e.value = e.textContent = o; sel.appendChild(e); });
+    fill($("jf-type"), POSITION_TYPES); fill($("jf-mode"), WORK_MODES);
+
+    const configured = CFG && !/^REPLACE/.test(CFG.RELAY_URL) && !/^REPLACE/.test(CFG.TURNSTILE_SITE_KEY);
+    if (!configured) {
+      submit.disabled = true;
+      status.innerHTML = "The online form isn't activated yet. " + FALLBACK;
+    }
+
+    function showErrors(list) {
+      errors.innerHTML = list.map((e) => `<li>${e.message}</li>`).join("");
+      errors.style.display = list.length ? "grid" : "none";
+      list.forEach((e) => { const el = form.querySelector(`[name="${e.field}"]`); if (el) el.setAttribute("aria-invalid", "true"); });
+      if (list.length) errors.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+
+    form.addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      form.querySelectorAll("[aria-invalid]").forEach((el) => el.removeAttribute("aria-invalid"));
+      const data = Object.fromEntries(new FormData(form).entries());
+      data.confirmed = $("jf-confirmed").checked;
+      data["cf-turnstile-response"] = window.turnstile ? (window.turnstile.getResponse() || "") : "";
+
+      const v = validateSubmission(data);
+      if (!v.ok) { showErrors(v.errors); return; }
+      if (!data["cf-turnstile-response"]) { showErrors([{ field: "", message: "Please complete the verification check (just above the button). If it didn't load, disable ad-blockers for this page or use the email option." }]); return; }
+      showErrors([]);
+
+      submit.disabled = true; status.textContent = "Submitting…";
+      try {
+        const res = await fetch(CFG.RELAY_URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
+        const out = await res.json().catch(() => ({}));
+        if (res.ok && out.ok) {
+          $("jf-ref").textContent = out.number ? `#${out.number}` : "received";
+          $("jf-echo-email").textContent = v.fields.contact;
+          form.hidden = true; $("jf-success").hidden = false;
+          $("jf-success").scrollIntoView({ behavior: "smooth", block: "start" });
+          return;
+        }
+        if (res.status === 400 && Array.isArray(out.errors) && out.errors.length) { showErrors(out.errors); status.textContent = ""; }
+        else if (res.status === 429) { status.textContent = out.error || "Too many submissions — please try again later."; }
+        else { status.innerHTML = (out.error || "Something went wrong.") + " " + FALLBACK; }
+      } catch {
+        status.innerHTML = "We couldn't reach the submission service. " + FALLBACK;
+      } finally {
+        submit.disabled = false;
+        if (window.turnstile) { try { window.turnstile.reset(); } catch {} }
+      }
+    });
   </script>
 </body>
 </html>

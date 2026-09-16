@@ -306,3 +306,6 @@ a:hover { text-decoration: underline; }
   .job-card { grid-template-columns: 1fr; }
   .policy-grid { grid-template-columns: 1fr; }
 }
+
+/* disabled buttons (job form before activation, while submitting) */
+.btn:disabled { opacity: .55; cursor: not-allowed; transform: none; box-shadow: none; }
