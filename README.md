@@ -127,6 +127,12 @@ moderator's approval.
      Repeat offenders can be blocked from the repo.
 4. That's it. Edits by the poster are re-reviewed automatically (the Action
    re-runs on edit; the `approved` label stays unless you remove it).
+5. **If an approved post doesn't appear**, it failed validation (most often:
+   no `https://` link or email in *How to apply*). The Action comments on the
+   issue with the exact reason and adds the **`needs-info`** label. Once the
+   poster (or you) edits the submission to fix it, it publishes automatically
+   and `needs-info` is removed. Filter for open `needs-info` issues to see
+   everything stuck.
 
 To force a rebuild at any time: **Actions → "Publish job board" → Run workflow.**
 

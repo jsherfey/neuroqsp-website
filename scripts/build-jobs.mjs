@@ -31,6 +31,7 @@ import { dirname, join } from "node:path";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT_JOBS = join(ROOT, "jobs.json");
 const OUT_EXPIRED = join(ROOT, "expired.json");
+const OUT_SKIPPED = join(ROOT, "skipped.json");   // approved issues that could not be published, with reasons
 
 const DEFAULT_DAYS = 60;
 const MAX_DAYS = 90;
@@ -93,6 +94,8 @@ async function main() {
   const jobs = [];
   const expired = [];
   const warnings = [];
+  const skipped = [];   // { number, reason } for approved-but-unpublishable issues
+  const skip = (n, reason) => { warnings.push(`#${n}: ${reason} — skipped`); skipped.push({ number: n, reason }); };
 
   for (const issue of issues) {
     const n = issue.number;
@@ -110,10 +113,10 @@ async function main() {
 
     const missing = Object.entries({ title, company, location, type, mode, summary, applyText })
       .filter(([, v]) => !v).map(([k]) => k);
-    if (missing.length) { warnings.push(`#${n}: missing ${missing.join(", ")} — skipped`); continue; }
+    if (missing.length) { skip(n, `missing required field(s): ${missing.join(", ")}`); continue; }
 
     const apply = extractApply(applyText);
-    if (!apply) { warnings.push(`#${n}: "How to apply" has no https:// link or email — skipped`); continue; }
+    if (!apply) { skip(n, `"How to apply" must contain an https:// application link and/or an email address`); continue; }
 
     const posted = startOfUtcDay(new Date(issue.createdAt));
     const cap = addDays(posted, MAX_DAYS);
@@ -146,6 +149,7 @@ async function main() {
     console.log(`No change — jobs.json already lists ${jobs.length} job(s).`);
   }
   await writeFile(OUT_EXPIRED, JSON.stringify(expired) + "\n");
+  await writeFile(OUT_SKIPPED, JSON.stringify(skipped) + "\n");
 
   jobs.forEach((j) => console.log(`  • #${j.id} ${j.title} — ${j.company} (expires ${j.expires})`));
   if (expired.length) console.log(`Expired (to close): ${expired.map((n) => "#" + n).join(", ")}`);

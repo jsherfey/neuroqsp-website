@@ -54,9 +54,33 @@ jobs:
               && echo "closed #$n" || echo "could not close #$n"
           done
 
+      - name: Tell posters what is missing
+        # For approved issues the build could not publish, leave one comment
+        # explaining why and add `needs-info`. Skips issues that already carry
+        # an identical bot comment, so daily runs don't repeat themselves.
+        run: |
+          jq -c '.[]' skipped.json | while read -r row; do
+            n=$(jq -r .number <<<"$row"); reason=$(jq -r .reason <<<"$row")
+            marker="<!-- neuroqsp-bot:skipped -->"
+            body="${marker}
+          Thanks for the posting! It's been approved, but it **can't be published yet**:
+
+          > ${reason}
+
+          Please edit the submission above (click the ⋯ menu on the first post → **Edit**) to fix this. It will be re-checked and published automatically — no need to resubmit."
+            last=$(gh api "repos/$GITHUB_REPOSITORY/issues/$n/comments?per_page=100" --jq '[.[] | select(.body | contains("'"$marker"'"))] | last | .body // ""')
+            if [ "$last" = "$body" ]; then echo "#$n: already notified"; continue; fi
+            gh issue comment "$n" --repo "$GITHUB_REPOSITORY" --body "$body" >/dev/null && echo "#$n: commented"
+            gh issue edit "$n" --repo "$GITHUB_REPOSITORY" --add-label needs-info >/dev/null || true
+          done
+          # Published listings no longer need info.
+          for n in $(jq -r '.jobs[].id' jobs.json); do
+            gh issue edit "$n" --repo "$GITHUB_REPOSITORY" --remove-label needs-info >/dev/null 2>&1 || true
+          done
+
       - name: Commit jobs.json if changed
         run: |
-          rm -f issues.json expired.json
+          rm -f issues.json expired.json skipped.json
           if ! git diff --quiet jobs.json; then
             git config user.name "github-actions[bot]"
             git config user.email "github-actions[bot]@users.noreply.github.com"
