@@ -18,7 +18,7 @@
     window.onTurnstileLoad = function () {
       var k = window.NEUROQSP_JOBS.TURNSTILE_SITE_KEY;
       if (window.turnstile && k && !/^REPLACE/.test(k)) {
-        window.turnstile.render("#turnstile", { sitekey: k, theme: "light" });
+        window.turnstile.render("#turnstile-widget", { sitekey: k, theme: "light" });
       }
     };
   </script>
@@ -134,7 +134,7 @@
               <label for="jf-website">Website</label>
               <input id="jf-website" name="website" type="text" tabindex="-1" autocomplete="off">
             </div>
-            <div id="turnstile" class="field"></div>
+            <div id="turnstile-widget" class="field"></div>
 
             <ul id="jf-errors" class="checklist" style="color:#b42318; gap:6px; margin:0 0 14px; display:none;"></ul>
             <button id="jf-submit" type="submit" class="btn btn--primary" style="width:100%; justify-content:center;">Submit for review →</button>
