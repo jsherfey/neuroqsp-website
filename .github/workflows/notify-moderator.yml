@@ -62,6 +62,10 @@ jobs:
         run: |
           N=$(cat number.txt); TITLE=$(cat title.txt); URL=$(cat url.txt); AUTHOR=$(cat author.txt)
           QUEUE="https://github.com/$GITHUB_REPOSITORY/issues?q=is%3Aopen+label%3Ajob-submission+-label%3Aapproved"
+          # Posters often leave the issue title at its "[Job]" default, so prefer
+          # the form's "Job title" field for the subject line when it exists.
+          FORM_TITLE=$(awk '/^### Job title/{f=1;next} /^### /{f=0} f && NF {print; exit}' body.txt)
+          [ -n "$FORM_TITLE" ] && [ "$FORM_TITLE" != "_No response_" ] && TITLE="$FORM_TITLE"
           # Strip anything that could smuggle extra headers into the subject line.
           SAFE_TITLE=$(printf '%s' "$TITLE" | tr -d '\r\n' | cut -c1-150)
           {
