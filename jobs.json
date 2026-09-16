@@ -1,21 +1,6 @@
 {
-  "updated": "2026-09-16T16:51:24.134Z",
+  "updated": "2026-09-16T16:53:58.146Z",
   "jobs": [
-    {
-      "id": 4,
-      "title": "Test job",
-      "company": "Test company",
-      "location": "Here",
-      "type": "Part-time",
-      "mode": "Remote",
-      "summary": "Test tole",
-      "applyUrl": "",
-      "applyEmail": "neuroqsp@gmail.com",
-      "applyNote": "Email neuroqsp@gmail.com",
-      "posted": "2026-09-16",
-      "expires": "2026-09-17",
-      "url": "https://github.com/jsherfey/neuroqsp-website/issues/4"
-    },
     {
       "id": 2,
       "title": "Hypothetical QSP role",
