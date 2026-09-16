@@ -12,8 +12,8 @@
   <script>
     // ---- Job form configuration (fill these in after deploying relay/) ----
     window.NEUROQSP_JOBS = {
-      RELAY_URL: "REPLACE_WITH_WORKER_URL/submit",   // e.g. https://neuroqsp-jobs.<you>.workers.dev/submit
-      TURNSTILE_SITE_KEY: "REPLACE_WITH_TURNSTILE_SITE_KEY",
+      RELAY_URL: "https://neuroqsp-jobs.neuroqsp-jobs-relay.workers.dev/submit",
+      TURNSTILE_SITE_KEY: "0x4AAAAAAE49ALRHXkP7R-Nu",
     };
     window.onTurnstileLoad = function () {
       var k = window.NEUROQSP_JOBS.TURNSTILE_SITE_KEY;
