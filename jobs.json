@@ -1,20 +1,4 @@
 {
-  "updated": "2026-09-16T16:53:58.146Z",
-  "jobs": [
-    {
-      "id": 2,
-      "title": "Hypothetical QSP role",
-      "company": "Hypothetical company",
-      "location": "Imagination",
-      "type": "Contract",
-      "mode": "Remote",
-      "summary": "Responsibilities: ...",
-      "applyUrl": "",
-      "applyEmail": "neuroqsp@gmail.com",
-      "applyNote": "Email to neuroqsp@gmail.com",
-      "posted": "2026-09-16",
-      "expires": "2026-09-16",
-      "url": "https://github.com/jsherfey/neuroqsp-website/issues/2"
-    }
-  ]
+  "updated": "2026-09-17T11:37:28.751Z",
+  "jobs": []
 }
